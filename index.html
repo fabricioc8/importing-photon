@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documenttttt</title>
+</head>
+<body>
+    
+    <img id="img" src="descarga.jpg" alt="">
+
+    <canvas id="canvas" width="240" height="297"
+    style="border:1px solid #d3d3d3;">
+    Your browser does not support the HTML5 canvas tag.
+    </canvas>
+
+    <script type="text/javascript">
+        yayQuery = function() {
+            var yay = {};
+            yay.sayHello = function(message) {
+                console.log(message);
+            }
+            yay.getMessage = function() {
+                return 'Hello, world!';
+            }
+           return yay;
+        };
+    </script>
+
+    <script src="dist/main.js"></script>
+    <script src="out/main.js"></script>
+</body>
+</html>

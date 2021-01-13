@@ -1,0 +1,77 @@
+--siguiendo las indicaciones de https://clojurescript.org/reference/dependencies pude utilizar
+un script de js importandolo en mi photon/main.cljs, accedi a el a traves de js/yayQuery
+(la notacion seria js/objeto ya que lo estamos declarando globalmente)
+cual seria la diferencia de tenerlo en window.objeto?? - notese que no se uso :require en el archivo
+con el comando:
+***clj -m cljs.main -co build.edn -c photon.main -r***
+pudimos compilar exitosamente el .cljs a out/main.js y al abrir el browse encontramos impreso en la
+la consola el codigo de yayQuery que habiamos escrito. notese que el script esta especificado como
+type="text/javascript"
+
+--al intentar utilizar photon copiamos la carpeta dist que habiamos bundelizado con webpack y agregamos
+el script en el html como type="module" (antes de agregar type="module" daba error de import meta creo)
+pero solo pudimos acceder a un window.photon que me parece que esta incompleto:
+(notese que es window.photon y no window.Photon)
+    main: {…}}main: __proto__: Object__proto__: constructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+y ademas el error:
+    Error importing `index.js`: TypeError: Failed to execute 'compile' on 'WebAssembly':
+    HTTP status code is not ok
+
+--para cambiar el origen del codigo de yayQuery reemplazamos el script inline por el archivo
+resources/yayquery-externs.js y la siguiente configuracion a build.edn para que lo encuentre:
+
+{...
+:output-to "out/main.js"
+:externs ["yayquery-externs.js"]
+ ...}
+
+y compilamos pero el siguiente error aparecio:
+    Uncaught ReferenceError: yayQuery is not defined
+    at main.cljs:5
+
+probamos agregando el archivo cljs.jar pero obtuvimos el error:
+    Uncaught TypeError: Cannot read property 'sayHello' of undefined
+    at main.cljs:6
+
+probamos agregando el script <script type="module" src="resources/yayquery-externs.js"></script>
+pero obtuvimos el error:
+    Uncaught ReferenceError: yayQuery is not defined
+    at main.cljs:5
+
+
+--volviendo a la utilizacion de photon probamos agregando un script inline con el contenido de
+dist/main.js y volvimos a compilar. dejamos de ver el error:
+    Error importing `index.js`: TypeError: Failed to execute 'compile' on 'WebAssembly':
+    HTTP status code is not ok
+pero al pedir window.photon parece seguir incompleto
+
+--Retomando...al ejecutar el comando clj de compilacion se abrio el browser y mostro este error:
+
+Uncaught SyntaxError: Cannot use 'import.meta' outside a module
+
+probe cambiando el tipo de script de type="text/javascript" a type="module" y paso a mostrar este otro:
+
+Failed to load resource: the server responded with a status of 404 (Not Found) :9000/405.js:1
+Failed to load resource: the server responded with a status of 404 (Not Found) :9000/138.js:1
+Failed to load resource: the server responded with a status of 404 (Not Found) :9000/e505a22801dda785956a.module.wasm:1
+Error importing `index.js`: TypeError: Failed to execute 'compile' on 'WebAssembly': HTTP status code is not ok ?rel=1609953047845:25
+
+indicando que no se pudieron cargar los archivos 405.js 138.js ni el module.wasm
+
+--Intente copiando los archivos ccc.module.wasm, 138 y 405 dentro de la carpeta out/photon ya que el
+browser indicaba que errores 404 not found como si los estuviese buscando en esa carpeta en vez de en la
+misma de la que estoy cargando dist/main.js. los errores de 138 y 405 dejaros de aparecer, pero el de
+ccc.module.wasm no.
+
+--Cambie en el script del index.html en la carpeta principal el type a "module" "text/javascript" y nada,
+pero ninguno de los 3 funciono.
+
+con "text/javascript" no encontraba el .module.wasm en la carpeta dist y tiraba el error de 'compile on
+WebAssembly'
+
+si lo dejo sin type arroja los mismos 2 errores
+
+con "module" pasa a buscar los archivos en la carpeta /out en vez de la /dist y en este caso arroja
+errores para el 405 el 138 y el .module.wasm
+
+--Intente instalar type-is y express como sugeria este post https://stackoverflow.com/questions/50589083/typeerror-failed-to-execute-compile-on-webassembly-incorrect-response-mime
