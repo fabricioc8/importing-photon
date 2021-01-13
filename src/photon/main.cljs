@@ -21,11 +21,12 @@
 
 (defn get-canvas-context-from-id
   []
-  (let [canvas (.getElementById js/document "canvas")
+  (let [photon js/Photon
+        canvas (.getElementById js/document "canvas")
         ctx (.getContext canvas "2d")
         _ (.drawImage ctx (.getElementById js/document "img") 0 0)
-        image (js/open_image canvas ctx)
-        _ (js/grayscale image)]
-    (js/putImageData canvas ctx image)))
+        image (.open_image photon canvas ctx)
+        _ (.grayscale photon image)]
+    (.putImageData photon canvas ctx image)))
 
 (get-canvas-context-from-id)
